@@ -1,0 +1,29 @@
+dependencies:
+  espressif/bh1750:
+    component_hash: e898130f6b2fc4bc0d6022a2e431752bae808b9c94d4cc91596e36ecaf4cb7c6
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.3'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 2.0.0
+  idf:
+    source:
+      type: idf
+    version: 5.5.2
+  zorxx/dht:
+    component_hash: 5bac146b1e31cd739dba6e3edb791fac1052221ed2e38a30f8c575bee1e96c13
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.2
+direct_dependencies:
+- espressif/bh1750
+- idf
+- zorxx/dht
+manifest_hash: 106dc99b120d6b4436957199b0d1ba081208ed7253622c36aaba02c838f242ba
+target: esp32s3
+version: 2.0.0
