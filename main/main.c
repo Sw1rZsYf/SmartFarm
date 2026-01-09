@@ -42,8 +42,8 @@ void app_main(void)
 
     int number = 0;
 
-    adc_system_init(); // 初始化ADC系统
-    gy30_init();       // 初始化光照传感器
+    // adc_system_init(); // 初始化ADC系统
+    // gy30_init();       // 初始化光照传感器
 
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES  || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -76,7 +76,7 @@ void app_main(void)
 //传感器采集任务
 void sensor_task(void *arg) {
     while (1) {
-        read_sensors(&sensor_data.temperature, &sensor_data.humidity,
+        sim_read_sensors(&sensor_data.temperature, &sensor_data.humidity,
                         &sensor_data.nh3_voltage, &sensor_data.h2s_voltage,
                         &sensor_data.light);
         int ret = report_sensor_data(sensor_data.temperature, sensor_data.humidity,
@@ -97,7 +97,7 @@ void get_time_task(void *arg) {
     struct tm timeinfo;
     while (1) {
         calc_current_time();
-        vTaskDelay(pdMS_TO_TICKS(10000)); // 每分钟获取一次时间
+        vTaskDelay(pdMS_TO_TICKS(10000)); // 每10s获取一次时间
     }
 }
 

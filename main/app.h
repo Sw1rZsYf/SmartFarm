@@ -32,6 +32,7 @@ typedef struct
 
 void read_sensors(float *temperature, float *humidity,
                   int *nh3_voltage, int *h2s_voltage,int *light);
-
+void sim_read_sensors(float *temperature, float *humidity,
+                      int *nh3_voltage, int *h2s_voltage,int *light);
 
 #endif
