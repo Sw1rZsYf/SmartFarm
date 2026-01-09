@@ -1,0 +1,13 @@
+产品ID: h2VKEmBI1g
+设备名称: ESP32_01
+设备密钥: Rk5mRldncFB4Z0RHNkNwOWo5VkpiQVhqeVgyeWtoSUY=
+
+
+主用户AccessKey :7eac08da9e1249928d270576edc4f936
+产品AccessKey: +3OtoaOrHwNraVP7uWex4SH1/2Mh1UPr+z9VY4lvQ2M=
+
+Access Key :8042b46fce994a1aa9621ffa66fa4d95
+Secret Key: 14b0101a7dc647a4bde09d7125d18d23
+
+小程序时间戳：2051782699
+小程序token：version=2022-05-01&res=userid%2F485483&et=2051782699&method=sha1&sign=53NE0OaUOubARq1zYfFHCldt2mQ%3D
