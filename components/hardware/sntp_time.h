@@ -4,9 +4,7 @@
 #include "esp_sntp.h"
 #include "time.h"
 
-
-
-void initialize_sntp(void);   
+void initialize_sntp(void);
 void calc_current_time(void);
 
 uint8_t get_current_hour(void);

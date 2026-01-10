@@ -1,9 +1,9 @@
-#include"app.h"
+#include "app.h"
 #include "dht.h"
 #include "gy30.h"
 
 void read_sensors(float *temperature, float *humidity,
-                  int *nh3_voltage, int *h2s_voltage,int *light)
+                  int *nh3_voltage, int *h2s_voltage, int *light)
 {
     // 读取DHT传感器数据
     dht_read_float_data(DHT_TYPE_DHT11, DHT_GPIO_PIN, humidity, temperature);
@@ -14,7 +14,7 @@ void read_sensors(float *temperature, float *humidity,
 }
 
 void sim_read_sensors(float *temperature, float *humidity,
-                      int *nh3_voltage, int *h2s_voltage,int *light)
+                      int *nh3_voltage, int *h2s_voltage, int *light)
 {
     // 模拟传感器数据
     *temperature = 25.0 + (rand() % 100) / 10.0; // 25.0 到 35.0 度

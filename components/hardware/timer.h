@@ -14,7 +14,4 @@
  */
 QueueHandle_t timerInitConfig(uint32_t resolution_hz, uint64_t alarm_count);
 
-
-
-
 #endif // _TIMER_H
