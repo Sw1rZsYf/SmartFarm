@@ -208,6 +208,19 @@ void RGB_Blink(void)
 }
 
 
+void switch_led(uint32_t on)
+{
+	if(on == 0)
+		neopixel_set_pixel_rgb(0, 0, 0, 0);
+	else
+		neopixel_set_pixel_rgb(0,255,255,255);
+}
+
+void switch_fan(uint32_t on)
+{
+	gpio_set_level(FAN_IONUM, on);
+}
+
     //写
     //gpio_set_level(gpio_num, level);
 

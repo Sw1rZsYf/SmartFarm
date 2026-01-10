@@ -8,6 +8,8 @@ idf_component_register(
         "onenet_config.c"
         "gy30.c"
         "sntp_time.c"
+        "mqtt_handler.c"
+        "mqtt_publisher.c"
     INCLUDE_DIRS "."             # 头文件目录
     REQUIRES driver "esp_adc" "esp_wifi" "nvs_flash" "esp_netif" "mqtt" "json" "esp_driver_i2c" "bh1750" "lwip"# 依赖的组件
 )

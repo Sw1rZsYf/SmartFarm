@@ -88,7 +88,7 @@ void sensor_task(void *arg) {
                     sensor_data.nh3_voltage, sensor_data.h2s_voltage, sensor_data.light);
         // 3. 等待10秒后再次上报
 
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vTaskDelay(pdMS_TO_TICKS(10000));
     }
 }
 

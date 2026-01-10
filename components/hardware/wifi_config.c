@@ -20,6 +20,9 @@ static const char *TAG = "WiFi_Connector";
 #define WIFI_PASSWORD  "zjy1234567"
 #define MAX_RETRY_NUM  5
 
+// #define WIFI_SSID      "HONOR-310I2C"
+// #define WIFI_PASSWORD  "12345678lcw."
+// #define MAX_RETRY_NUM  5
 
 // 事件组和回调函数句柄
 static EventGroupHandle_t s_wifi_event_group;
