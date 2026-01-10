@@ -60,6 +60,21 @@ static void handle_switch_led_service(const cJSON* params, const char* msg_id, c
     }
 }
 
+// 处理开关风扇服务
+static void handle_switch_fan_service(const cJSON* params, const char* msg_id, const char* service_id) {
+    cJSON *fan_on = cJSON_GetObjectItem(params, "fan_on");
+    
+    if (cJSON_IsTrue(fan_on)) {
+        switch_fan(1);
+        ESP_LOGI(TAG, "执行命令: 开风扇");
+        mqtt_send_service_reply(service_id, msg_id, 200, "FAN turned on", NULL);
+    } else if (cJSON_IsFalse(fan_on)) {
+        switch_fan(0);
+        ESP_LOGI(TAG, "执行命令: 关风扇");
+        mqtt_send_service_reply(service_id, msg_id, 200, "FAN turned off", NULL);
+    }
+}
+
 // 处理服务调用
 static void process_service_invoke(const char* topic, const char* data) {
     ESP_LOGI(TAG, "解析到服务调用命令");
@@ -83,7 +98,11 @@ static void process_service_invoke(const char* topic, const char* data) {
     if (params && cJSON_IsObject(params)) {
         if (strcmp(service_id, "switch_led") == 0) {
             handle_switch_led_service(params, msg_id, service_id);
-        } else {
+        }else if (strcmp(service_id,"switch_fan")==0) {
+            handle_switch_fan_service(params, msg_id, service_id);
+        }
+
+        else {
             ESP_LOGW(TAG, "未知服务ID: %s", service_id);
             mqtt_send_service_reply(service_id, msg_id, 404, "Service not found", NULL);
         }

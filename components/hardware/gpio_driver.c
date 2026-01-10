@@ -214,6 +214,7 @@ void switch_led(uint32_t on)
 		neopixel_set_pixel_rgb(0, 0, 0, 0);
 	else
 		neopixel_set_pixel_rgb(0,255,255,255);
+	neopixel_show();
 }
 
 void switch_fan(uint32_t on)

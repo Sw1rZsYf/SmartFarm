@@ -67,7 +67,7 @@ void app_main(void)
         //从队列中接收一个数据
         if (xQueueReceive(queue, &number, pdMS_TO_TICKS(2000)))
         {
-            RGB_Blink();            //正常运行指示+
+            // RGB_Blink();            //正常运行指示+
         }
     }
     
