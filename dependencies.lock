@@ -24,6 +24,6 @@ direct_dependencies:
 - espressif/bh1750
 - idf
 - zorxx/dht
-manifest_hash: 106dc99b120d6b4436957199b0d1ba081208ed7253622c36aaba02c838f242ba
+manifest_hash: f83d38447d979d68905b4dbe94534fc526e4303f47f47305fd2e9cca84a12af3
 target: esp32s3
 version: 2.0.0

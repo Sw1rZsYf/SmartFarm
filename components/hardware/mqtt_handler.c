@@ -10,6 +10,7 @@
 #include "onenet_config.h"
 #include "mqtt_handler.h"
 #include "mqtt_publisher.h"
+#include "app.h"
 
 static const char *TAG = "MQTT_HANDLER";
 
@@ -91,6 +92,16 @@ static void handle_switch_fan_service(const cJSON *params, const char *msg_id, c
     }
 }
 
+static void handle_set_time_service(const cJSON *params, const char *msg_id, const char *service_id)
+{
+    cJSON *hour_json = cJSON_GetObjectItem(params, "hour");
+    cJSON *min_json = cJSON_GetObjectItem(params, "min");
+    int hour = hour_json->valueint;
+    int min = min_json->valueint;
+    setFeedTask(hour, min, 1);
+    mqtt_send_service_reply(service_id, msg_id, 200, "OK", NULL);
+}
+
 // 处理服务调用
 static void process_service_invoke(const char *topic, const char *data)
 {
@@ -124,7 +135,10 @@ static void process_service_invoke(const char *topic, const char *data)
         {
             handle_switch_fan_service(params, msg_id, service_id);
         }
-
+        else if (strcmp(service_id, "setAutoFeedTime") == 0)
+        {
+            handle_set_time_service(params, msg_id, service_id);
+        }
         else
         {
             ESP_LOGW(TAG, "未知服务ID: %s", service_id);

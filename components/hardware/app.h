@@ -27,9 +27,22 @@ typedef struct
     int light;
 } sensor_data_t;
 
+typedef struct
+{
+    int hour;
+    int min;
+    enum
+    {
+        Auto = 0,
+        Manual
+    } mode;
+    /* data */
+} farm_task_t;
+
 void read_sensors(float *temperature, float *humidity,
                   int *nh3_voltage, int *h2s_voltage, int *light);
 void sim_read_sensors(float *temperature, float *humidity,
                       int *nh3_voltage, int *h2s_voltage, int *light);
-
+void setFeedTask(int hour, int min, int mode);
+void runFeedTask();
 #endif

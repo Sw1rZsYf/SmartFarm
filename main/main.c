@@ -51,7 +51,7 @@ void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-    // 3. 初始化Wi-Fi，并传入连接成功的回调函数
+    // 初始化Wi-Fi，并传入连接成功的回调函数
     ESP_LOGI(MAIN_TAG, "Initializing Wi-Fi...");
     wifi_connect_init(on_wifi_connected);
 
