@@ -9,9 +9,12 @@
 #include "app.h"
 #include "gy30.h"
 #include "sntp_time.h"
+#include "lcd_ili9341.h"
+#include "esp_log.h"
 
 void sensor_task(void *arg);
 void get_time_task(void *arg);
+void Screen_init();
 #define BIN_GPIO GPIO_NUM_5
 
 static const char *MAIN_TAG = "Main";
@@ -31,9 +34,9 @@ static void on_wifi_connected(void)
     ESP_LOGI(MAIN_TAG, "Wi-Fi connected, proceeding to start MQTT client.");
     // 启动MQTT客户端
     mqtt_onenet_start();
-    initialize_sntp(); // 初始化SNTP同步时间
-    xTaskCreate(&sensor_task, "sensor_task", 4096, NULL, 5, NULL);
-    xTaskCreate(&get_time_task, "get_time_task", 4096, NULL, 5, NULL);
+    initialize_sntp();                                                 // 初始化SNTP同步时间
+    xTaskCreate(&sensor_task, "sensor_task", 4096, NULL, 5, NULL);     // 获取传感器数据并上报
+    xTaskCreate(&get_time_task, "get_time_task", 4096, NULL, 5, NULL); // 获取实时时间
 }
 
 void app_main(void)
@@ -41,8 +44,8 @@ void app_main(void)
 
     int number = 0;
 
-    // adc_system_init(); // 初始化ADC系统
-    // gy30_init();       // 初始化光照传感器
+    adc_system_init(); // 初始化ADC系统
+    gy30_init();       // 初始化光照传感器
 
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -59,15 +62,15 @@ void app_main(void)
     // 等待传感器稳定
     vTaskDelay(pdMS_TO_TICKS(3000));
     QueueHandle_t queue = 0;
-    // 初始化定时器 1秒进入回调函数一次
+
     queue = timerInitConfig(1000000, 2000000);
 
+    Screen_init();
     while (1)
     {
-        // 从队列中接收一个数据
+
         if (xQueueReceive(queue, &number, pdMS_TO_TICKS(2000)))
         {
-            // RGB_Blink();            //正常运行指示+
         }
     }
 }
@@ -77,9 +80,9 @@ void sensor_task(void *arg)
 {
     while (1)
     {
-        sim_read_sensors(&sensor_data.temperature, &sensor_data.humidity,
-                         &sensor_data.nh3_voltage, &sensor_data.h2s_voltage,
-                         &sensor_data.light);
+        read_sensors(&sensor_data.temperature, &sensor_data.humidity,
+                     &sensor_data.nh3_voltage, &sensor_data.h2s_voltage,
+                     &sensor_data.light);
         int ret = report_sensor_data(sensor_data.temperature, sensor_data.humidity,
                                      sensor_data.nh3_voltage, sensor_data.h2s_voltage,
                                      sensor_data.light);
@@ -101,4 +104,16 @@ void get_time_task(void *arg)
         calc_current_time();
         vTaskDelay(pdMS_TO_TICKS(10000)); // 每10s获取一次时间
     }
+}
+void Screen_init()
+{
+    // 初始化LCD，使用40MHz频率，0度旋转
+    esp_err_t ret = lcd_init(40000000, LCD_ROTATION_0);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE("MAIN", "LCD初始化失败");
+        return;
+    }
+
+    ESP_LOGI("MAIN", "LCD初始化成功，开始演示...");
 }

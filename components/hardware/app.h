@@ -45,4 +45,9 @@ void sim_read_sensors(float *temperature, float *humidity,
                       int *nh3_voltage, int *h2s_voltage, int *light);
 void setFeedTask(int hour, int min, int mode);
 void runFeedTask();
+void runOnLedTask(void);
+void runOffLedTask(void);
+void runEmssionTask();
+void setEmssionTask();
+void check_AutoTask();
 #endif

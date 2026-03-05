@@ -2,6 +2,8 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "sntp_time.h"
+#include "app.h"
 
 static const char *TIME_TAG = "SNTP";
 
@@ -57,6 +59,9 @@ void calc_current_time(void)
     time_t now;
     time(&now);
     localtime_r(&now, &current_time);
+    // 检查有无自动任务需要执行
+    check_AutoTask();
+
     ESP_LOGI(TIME_TAG, "时间同步成功！当前时间: %04d-%02d-%02d %02d:%02d:%02d",
              current_time.tm_year + 1900, current_time.tm_mon + 1, current_time.tm_mday,
              current_time.tm_hour, current_time.tm_min, current_time.tm_sec);

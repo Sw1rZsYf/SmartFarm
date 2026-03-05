@@ -15,9 +15,14 @@ static const char *TAG = "WiFi_Connector";
 // #define WIFI_PASSWORD  "wwqy666."
 // #define MAX_RETRY_NUM  5
 
+// // Wi-Fi账号密码
+// #define WIFI_SSID "Magic"
+// #define WIFI_PASSWORD "zjy1234567"
+// #define MAX_RETRY_NUM 5
+
 // Wi-Fi账号密码
-#define WIFI_SSID "Magic"
-#define WIFI_PASSWORD "zjy1234567"
+#define WIFI_SSID "OPPO Find X8s 4FF6"
+#define WIFI_PASSWORD "hasp2792"
 #define MAX_RETRY_NUM 5
 
 // #define WIFI_SSID      "HONOR-310I2C"
@@ -79,7 +84,6 @@ void wifi_connect_init(wifi_connected_callback_t on_connected)
     // 初始化事件组
     s_wifi_event_group = xEventGroupCreate();
 
-    // 初始化TCP/IP和默认事件循环（如果主程序已初始化过，此部分可移至主程序，确保只执行一次）
     esp_netif_init();
     esp_event_loop_create_default();
     esp_netif_create_default_wifi_sta();

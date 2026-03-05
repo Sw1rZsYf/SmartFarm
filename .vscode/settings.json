@@ -16,5 +16,6 @@
     "--query-driver=**",
     "--compile-commands-dir=e:\\BiShe\\SmartFarm\\Project\\Project_demo\\build"
   ],
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "idf.currentSetup": "d:\\IoT\\esp\\v5.5.2\\esp-idf"
 }

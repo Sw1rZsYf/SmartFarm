@@ -61,14 +61,12 @@ static void handle_switch_led_service(const cJSON *params, const char *msg_id, c
 
     if (cJSON_IsTrue(led_on))
     {
-        switch_led(1);
-        ESP_LOGI(TAG, "执行命令: 开灯");
+        runOnLedTask();
         mqtt_send_service_reply(service_id, msg_id, 200, "LED turned on", NULL);
     }
     else if (cJSON_IsFalse(led_on))
     {
-        switch_led(0);
-        ESP_LOGI(TAG, "执行命令: 关灯");
+        runOffLedTask();
         mqtt_send_service_reply(service_id, msg_id, 200, "LED turned off", NULL);
     }
 }
