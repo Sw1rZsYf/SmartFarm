@@ -24,32 +24,50 @@ void initialize_sntp(void)
     setenv("TZ", TIME_ZONE, 1);
     tzset();
 
-    // 配置SNTP运行模式（等待同步后再继续）
+    // 配置SNTP
     esp_sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
 
-    // 设置NTP服务器地址
-    esp_sntp_setservername(0, NTP_SERVER);
+    // 设置多个NTP服务器
+    esp_sntp_setservername(0, "ntp1.aliyun.com"); // 阿里云
+    esp_sntp_setservername(1, "ntp.ntsc.ac.cn");  // 国家授时中心
+    esp_sntp_setservername(2, "cn.pool.ntp.org"); // NTP池
+    esp_sntp_setservername(3, "203.107.6.88");    // 阿里云IP
 
-    // 可选：设置备用服务器
-    esp_sntp_setservername(1, "ntp.ntsc.ac.cn");
-    esp_sntp_setservername(2, "pool.ntp.org");
+    // 可选：注册同步回调
+    // sntp_set_time_sync_notification_cb(time_sync_notification_cb);
 
-    // 初始化SNTP服务
+    // 初始化SNTP
     esp_sntp_init();
 
-    // 等待时间同步（最多等待10秒）
+    // 等待时间同步（检查实际时间）
+    time_t now = 0;
+    struct tm timeinfo = {0};
     int retry = 0;
-    const int retry_count = 20; // 20 * 500ms = 10秒
-    while (esp_sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && retry < retry_count)
+    const int max_retries = 60; // 60次 * 500ms = 30秒
+    const int delay_ms = 500;
+
+    time(&now);
+    localtime_r(&now, &timeinfo);
+
+    while ((timeinfo.tm_year < (2020 - 1900)) && retry < max_retries)
     {
-        ESP_LOGI(TIME_TAG, "等待时间同步... (%d/%d)", retry + 1, retry_count);
+        ESP_LOGI(TIME_TAG, "等待时间同步... (%d/%d)", retry + 1, max_retries);
         retry++;
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(delay_ms / portTICK_PERIOD_MS);
+
+        time(&now);
+        localtime_r(&now, &timeinfo);
     }
 
-    if (retry == retry_count)
+    if (timeinfo.tm_year >= (2020 - 1900))
     {
-        ESP_LOGW(TIME_TAG, "SNTP同步超时！ 定时功能将被关闭！");
+        ESP_LOGI(TIME_TAG, "时间同步成功！当前时间: %04d-%02d-%02d %02d:%02d:%02d",
+                 timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+                 timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+    }
+    else
+    {
+        ESP_LOGW(TIME_TAG, "SNTP同步超时！定时功能将被关闭！");
     }
 }
 

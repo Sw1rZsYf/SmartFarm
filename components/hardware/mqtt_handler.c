@@ -14,6 +14,8 @@
 
 static const char *TAG = "MQTT_HANDLER";
 
+
+
 // 主题字符串生成辅助函数
 static char *build_topic(const char *format, const char *product_id, const char *device_id, const char *extra)
 {
@@ -96,6 +98,7 @@ static void handle_set_time_service(const cJSON *params, const char *msg_id, con
     cJSON *min_json = cJSON_GetObjectItem(params, "min");
     int hour = hour_json->valueint;
     int min = min_json->valueint;
+    
     setFeedTask(hour, min, 1);
     mqtt_send_service_reply(service_id, msg_id, 200, "OK", NULL);
 }

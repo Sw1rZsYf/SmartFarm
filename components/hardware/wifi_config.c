@@ -15,18 +15,18 @@ static const char *TAG = "WiFi_Connector";
 // #define WIFI_PASSWORD  "wwqy666."
 // #define MAX_RETRY_NUM  5
 
-// // Wi-Fi账号密码
-// #define WIFI_SSID "Magic"
-// #define WIFI_PASSWORD "zjy1234567"
-// #define MAX_RETRY_NUM 5
-
 // Wi-Fi账号密码
-#define WIFI_SSID "OPPO Find X8s 4FF6"
-#define WIFI_PASSWORD "hasp2792"
-#define MAX_RETRY_NUM 5
+#define WIFI_SSID "Magic"
+#define WIFI_PASSWORD "zjy1234567"
+#define MAX_RETRY_NUM 10
 
-// #define WIFI_SSID      "HONOR-310I2C"
-// #define WIFI_PASSWORD  "12345678lcw."
+// // Wi-Fi账号密码
+// #define WIFI_SSID "OPPO"
+// #define WIFI_PASSWORD "hasp2792"
+// #define MAX_RETRY_NUM 10
+
+// #define WIFI_SSID      "iPhone"
+// #define WIFI_PASSWORD  "222222222"
 // #define MAX_RETRY_NUM  5
 
 // 事件组和回调函数句柄
@@ -47,6 +47,10 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
     }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
     {
+        // 将 event_data 转换为 wifi_event_sta_disconnected_t*
+        wifi_event_sta_disconnected_t *disconn = (wifi_event_sta_disconnected_t *)event_data;
+        ESP_LOGI(TAG, "Disconnected, reason code = %d", disconn->reason); // 打印原因码
+
         // 处理断开重连
         if (s_retry_num < MAX_RETRY_NUM)
         {
@@ -112,6 +116,7 @@ void wifi_connect_init(wifi_connected_callback_t on_connected)
             .threshold.authmode = WIFI_AUTH_WPA2_PSK, // 使用最通用的WPA2认证
         },
     };
+    // esp_wifi_set_connection_timeout(10); // 设置连接超时时间为10秒
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());

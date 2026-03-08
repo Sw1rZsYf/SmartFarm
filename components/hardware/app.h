@@ -36,6 +36,7 @@ typedef struct
         Auto = 0,
         Manual
     } mode;
+    int flag;
     /* data */
 } farm_task_t;
 
@@ -43,6 +44,8 @@ void read_sensors(float *temperature, float *humidity,
                   int *nh3_voltage, int *h2s_voltage, int *light);
 void sim_read_sensors(float *temperature, float *humidity,
                       int *nh3_voltage, int *h2s_voltage, int *light);
+void control(float temperature, float humidity,
+             int nh3_concentration, int h2s_concentration, int light);
 void setFeedTask(int hour, int min, int mode);
 void runFeedTask();
 void runOnLedTask(void);
@@ -50,4 +53,6 @@ void runOffLedTask(void);
 void runEmssionTask();
 void setEmssionTask();
 void check_AutoTask();
+void Opencurtain();
+void Closecurtain();
 #endif

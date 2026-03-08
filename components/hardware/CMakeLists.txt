@@ -13,6 +13,7 @@ idf_component_register(
         "app.c"
         "lcd_ili9341.c"
         "tjc_driver.c"
+        "pwm_driver.c"
     INCLUDE_DIRS "."             # 头文件目录
     REQUIRES driver "esp_adc" "esp_wifi" "nvs_flash" "esp_netif" "mqtt" "json" "esp_driver_i2c" "bh1750" "lwip"# 依赖的组件
 )
