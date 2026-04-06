@@ -234,12 +234,9 @@ void switch_led(uint32_t on)
 	neopixel_show();
 }
 
-void switch_fan(uint32_t on)
+void switch_fan(uint32_t Youmen)
 {
-	if (on == 0)
-		pwm_fade_duty(2, 128, 0, 1000); // 从50%平滑过渡到0%，1秒完成
-	else
-		pwm_fade_duty(2, 0, 128, 1000); // 从0%平滑过渡到50%，1秒完成
+	int aim_pwm = (int)(1.0 * Youmen / 100 * 255);
 }
 
 // 写

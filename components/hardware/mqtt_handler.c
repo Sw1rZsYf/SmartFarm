@@ -14,21 +14,79 @@
 
 static const char *TAG = "MQTT_HANDLER";
 
-
-
-// 主题字符串生成辅助函数
-static char *build_topic(const char *format, const char *product_id, const char *device_id, const char *extra)
+static const char *onenet_code_hint(int code)
 {
-    static char topic[200];
-    if (extra)
+    switch (code)
     {
-        snprintf(topic, sizeof(topic), format, product_id, device_id, extra);
+    case 200:
+        return "成功";
+    case 400:
+        return "请求格式错误，重点检查JSON结构/字段名";
+    case 401:
+        return "鉴权失败，检查token/用户名/密码";
+    case 403:
+        return "无权限，检查产品和设备绑定/权限策略";
+    case 404:
+        return "资源不存在，检查product_id/device_id/topic";
+    default:
+        return "未知错误，请查看msg/data详细信息";
+    }
+}
+
+// 处理属性上报回执
+static void process_property_post_reply(const char *data)
+{
+    cJSON *root = cJSON_Parse(data);
+    if (!root)
+    {
+        ESP_LOGE(TAG, "属性回执JSON解析失败: %s", data);
+        return;
+    }
+
+    cJSON *id_json = cJSON_GetObjectItem(root, "id");
+    cJSON *code_json = cJSON_GetObjectItem(root, "code");
+    cJSON *msg_json = cJSON_GetObjectItem(root, "msg");
+    cJSON *data_json = cJSON_GetObjectItem(root, "data");
+
+    const char *id_str = "N/A";
+    if (cJSON_IsString(id_json) && id_json->valuestring)
+    {
+        id_str = id_json->valuestring;
+    }
+
+    int code = cJSON_IsNumber(code_json) ? code_json->valueint : -1;
+    const char *msg = (cJSON_IsString(msg_json) && msg_json->valuestring)
+                          ? msg_json->valuestring
+                          : "";
+    const char *last_id = mqtt_get_last_report_id();
+
+    if (code == 200)
+    {
+        ESP_LOGI(TAG, "属性上报被平台接收: id=%s code=%d(%s) msg=%s",
+                 id_str, code, onenet_code_hint(code), msg);
     }
     else
     {
-        snprintf(topic, sizeof(topic), format, product_id, device_id);
+        ESP_LOGE(TAG, "属性上报被平台拒收: id=%s code=%d(%s) msg=%s",
+                 id_str, code, onenet_code_hint(code), msg);
     }
-    return topic;
+
+    if (last_id && last_id[0] != '\0' && strcmp(last_id, id_str) != 0)
+    {
+        ESP_LOGW(TAG, "回执ID与最近上报ID不一致: reply_id=%s last_report_id=%s", id_str, last_id);
+    }
+
+    if (data_json)
+    {
+        char *detail = cJSON_PrintUnformatted(data_json);
+        if (detail)
+        {
+            ESP_LOGI(TAG, "属性回执详情data=%s", detail);
+            free(detail);
+        }
+    }
+
+    cJSON_Delete(root);
 }
 
 // 解析服务调用主题，提取 service_id
@@ -98,7 +156,7 @@ static void handle_set_time_service(const cJSON *params, const char *msg_id, con
     cJSON *min_json = cJSON_GetObjectItem(params, "min");
     int hour = hour_json->valueint;
     int min = min_json->valueint;
-    
+
     setFeedTask(hour, min, 1);
     mqtt_send_service_reply(service_id, msg_id, 200, "OK", NULL);
 }
@@ -171,6 +229,10 @@ void mqtt_handle_data_event(esp_mqtt_event_handle_t event)
     {
         process_service_invoke(topic, data);
     }
+    else if (strstr(topic, "/thing/property/post/reply") != NULL)
+    {
+        process_property_post_reply(data);
+    }
     else
     {
         ESP_LOGD(TAG, "非服务调用主题，已忽略");
@@ -182,13 +244,25 @@ void mqtt_handle_connected_event(esp_mqtt_client_handle_t client)
 {
     ESP_LOGI(TAG, ">>> MQTT 成功连接至 OneNET <<<");
 
-    // 构建订阅主题
-    char *subscribe_topic = build_topic("$sys/%s/%s/thing/service/+/invoke",
-                                        ONENET_PRODUCT_ID, ONENET_DEVICE_ID, NULL);
+    // 构建订阅主题（使用独立缓冲区，避免主题字符串被覆盖）
+    char subscribe_topic[200];
+    char property_reply_topic[200];
+
+    snprintf(subscribe_topic, sizeof(subscribe_topic),
+             "$sys/%s/%s/thing/service/+/invoke",
+             ONENET_PRODUCT_ID, ONENET_DEVICE_ID);
+
+    snprintf(property_reply_topic, sizeof(property_reply_topic),
+             "$sys/%s/%s/thing/property/post/reply",
+             ONENET_PRODUCT_ID, ONENET_DEVICE_ID);
 
     // 订阅命令下发主题
     esp_mqtt_client_subscribe(client, subscribe_topic, 1);
     ESP_LOGI(TAG, "已订阅命令主题: %s", subscribe_topic);
+
+    // 订阅属性上报回执主题
+    esp_mqtt_client_subscribe(client, property_reply_topic, 1);
+    ESP_LOGI(TAG, "已订阅属性回执主题: %s", property_reply_topic);
 }
 
 // 处理MQTT断开事件

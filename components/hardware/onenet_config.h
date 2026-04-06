@@ -20,10 +20,17 @@ extern "C"
 #define ONENET_USERNAME ONENET_PRODUCT_ID
 #define ONENET_PASSWORD ONENET_DEVICE_SECRET
 
+// OneNET 物模型属性标识符（identifier）
+#define ONENET_PROP_TEMPERATURE "temperature"
+#define ONENET_PROP_HUMIDITY "humidity"
+#define ONENET_PROP_LIGHT "light"
+#define ONENET_PROP_H2S "h2s_concentration"
+#define ONENET_PROP_NH3 "nh3_concentration"
+
     // 函数声明
     void mqtt_onenet_start(void);
     int report_sensor_data(float temperature, float humidity,
-                           int nh3_concentration, int h2s_concentration, int light);
+                           float nh3_concentration, float h2s_concentration, int light);
 
 #ifdef __cplusplus
 }

@@ -16,6 +16,9 @@ void mqtt_send_service_reply(const char *service_id, const char *id,
 
 // 上报传感器数据
 int mqtt_report_sensor_data(float temperature, float humidity,
-                            int nh3_concentration, int h2s_concentration, int light);
+                            float nh3_concentration, float h2s_concentration, int light);
+
+// 获取最近一次属性上报的业务ID（JSON中的id）
+const char *mqtt_get_last_report_id(void);
 
 #endif // MQTT_PUBLISHER_H

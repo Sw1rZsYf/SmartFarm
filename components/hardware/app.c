@@ -3,6 +3,7 @@
 #include "gy30.h"
 #include "sntp_time.h"
 #include "pwm_driver.h"
+#include "tjc_driver.h"
 static const char *TAG = "APP_TASK";
 
 #define LIGHT_THRESHOLD_LOW 80   // 光照低于此值（lux）时打开窗帘（增加光照）
@@ -28,25 +29,27 @@ farm_task_t TaskEmssion =
 bool CurtainOpen = false;
 
 void read_sensors(float *temperature, float *humidity,
-                  int *nh3_voltage, int *h2s_voltage, int *light)
+                  float *nh3_ppm, float *h2s_ppm, int *light)
 {
-
+    int nh3_voltage, h2s_voltage;
     dht_read_float_data(DHT_TYPE_DHT11, DHT_GPIO_PIN, humidity, temperature);
 
-    adc_system_read(nh3_voltage, h2s_voltage, light);
+    adc_system_read(&nh3_voltage, &h2s_voltage, light);
 
+    *nh3_ppm = 1.0 * nh3_voltage / 2000.0;
+    *h2s_ppm = 1.0 * h2s_voltage / 2000.0;
     *light = (int)gy30_read_light();
 }
 
 void sim_read_sensors(float *temperature, float *humidity,
-                      int *nh3_voltage, int *h2s_voltage, int *light)
+                      float *nh3_ppm, float *h2s_ppm, int *light)
 {
     // 模拟传感器数据
     *temperature = 25.0 + (rand() % 100) / 10.0; // 25.0 到 35.0 度
     *humidity = 40.0 + (rand() % 600) / 10.0;    // 40.0% 到 100.0%
-    *nh3_voltage = 200 + (rand() % 800);         // 200 到 1000 mV
-    *h2s_voltage = 150 + (rand() % 850);         // 150 到 1000 mV
-    *light = 100 + (rand() % 900);               // 100 到 1000 lx
+    // *nh3_ppm = 1.0 * (200 + (rand() % 800)) / 2000.0; // 200 到 1000 mV
+    // *h2s_ppm = 1.0 * (150 + (rand() % 850)) / 2000.0; // 150 到 1000 mV
+    *light = 100 + (rand() % 900); // 100 到 1000 lx
 }
 
 void setFeedTask(int hour, int min, int mode)
@@ -136,18 +139,23 @@ static void heat(int On)
 }
 
 void control(float temperature, float humidity,
-             int nh3_concentration, int h2s_concentration, int light)
+             float nh3_concentration, float h2s_concentration, int light)
 {
-    // // 风扇控制（保持不变）
-    // if (temperature > 30 || nh3_concentration > 200 || h2s_concentration > 200)
-    // {
-    //     switch_fan(1);
-    // }
-    // else
-    // {
-    //     switch_fan(0);
-    // }
-
+    int Fan_youmen = 0;
+    if (temperature < 20.0)
+    {
+        Fan_youmen = 20;
+    }
+    else if (temperature > 27)
+    {
+        Fan_youmen = 90;
+    }
+    else
+    {
+        Fan_youmen = 20 + (int)(temperature - 20) * 10;
+    }
+    tjc_printf("n0.val=%d", Fan_youmen);
+    vTaskDelay(pdMS_TO_TICKS(20));
     // 窗帘滞回控制
     // 利用全局变量 CurtainOpen 记录当前窗帘状态（true=打开，false=关闭）
     if (light < LIGHT_THRESHOLD_LOW)
@@ -182,5 +190,5 @@ void Opencurtain()
 }
 void Closecurtain()
 {
-    sg90_set_angle_smooth(0, 180, 5, 50);
+    sg90_set_angle_smooth(0, 173, 5, 50);
 }

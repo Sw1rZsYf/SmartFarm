@@ -22,8 +22,8 @@ typedef struct
 {
     float temperature;
     float humidity;
-    int nh3_voltage;
-    int h2s_voltage;
+    float nh3_ppm;
+    float h2s_ppm;
     int light;
 } sensor_data_t;
 
@@ -41,11 +41,11 @@ typedef struct
 } farm_task_t;
 
 void read_sensors(float *temperature, float *humidity,
-                  int *nh3_voltage, int *h2s_voltage, int *light);
+                  float *nh3_ppm, float *h2s_ppm, int *light);
 void sim_read_sensors(float *temperature, float *humidity,
-                      int *nh3_voltage, int *h2s_voltage, int *light);
+                      float *nh3_ppm, float *h2s_ppm, int *light);
 void control(float temperature, float humidity,
-             int nh3_concentration, int h2s_concentration, int light);
+             float nh3_concentration, float h2s_concentration, int light);
 void setFeedTask(int hour, int min, int mode);
 void runFeedTask();
 void runOnLedTask(void);

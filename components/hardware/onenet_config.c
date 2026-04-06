@@ -73,7 +73,7 @@ void mqtt_onenet_start(void)
 
 // 上报传感器数据（包装函数）
 int report_sensor_data(float temperature, float humidity,
-                       int nh3_concentration, int h2s_concentration, int light)
+                       float nh3_concentration, float h2s_concentration, int light)
 {
     return mqtt_report_sensor_data(temperature, humidity,
                                    nh3_concentration, h2s_concentration, light);

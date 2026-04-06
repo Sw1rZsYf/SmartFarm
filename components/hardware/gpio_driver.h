@@ -8,10 +8,9 @@
 // NeoPixel配置
 #define LED_STRIP_PIN 48
 #define LED_STRIP_LED_NUM 1
-#define LED_STRIP_BRIGHTNESS 30  // 亮度值 (0-255)
+#define LED_STRIP_BRIGHTNESS 30 // 亮度值 (0-255)
 
-#define FAN_IONUM   42
-
+#define FAN_IONUM 42
 
 // 初始化 WS2812 驱动，gpio_num 可使用 GPIO_NUM_48
 // led_count 为灯珠数量，调用一次即可；成功返回 ESP_OK
@@ -40,6 +39,6 @@ void gpio_init_pin(gpio_num_t gpio_num, gpio_mode_t mode, bool pull_up_en, bool 
 void RGB_Blink(void);
 
 void switch_led(uint32_t on);
-void switch_fan(uint32_t on);
+void switch_fan(uint32_t Youmen);
 
 #endif

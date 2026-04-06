@@ -234,17 +234,17 @@ esp_err_t tjc_uart_deinit(void)
 }
 
 esp_err_t tjc_sent_sensor(float *temperature, float *humidity,
-                          int *nh3_voltage, int *h2s_voltage, int *light)
+                          float *nh3_voltage, float *h2s_voltage, int *light)
 {
-    tjc_printf("n0.val=%d", (int)*temperature);
+    tjc_printf("x2.val=%d", (int)(*temperature * 10));
     vTaskDelay(pdMS_TO_TICKS(20)); // 确保指令间有足够的时间间隔
     tjc_printf("n1.val=%d", (int)*humidity);
     vTaskDelay(pdMS_TO_TICKS(20));
-    tjc_printf("n2.val=%d", (*nh3_voltage) / 10);
+    tjc_printf("n2.val=%d", *light);
     vTaskDelay(pdMS_TO_TICKS(20));
-    tjc_printf("n3.val=%d", (*h2s_voltage) / 10);
+    tjc_printf("x0.val=%d", (int)((*h2s_voltage) * 100));
     vTaskDelay(pdMS_TO_TICKS(20));
-    tjc_printf("n4.val=%d", *light);
+    tjc_printf("x1.val=%d", (int)((*nh3_voltage) * 100));
     vTaskDelay(pdMS_TO_TICKS(20));
     return ESP_OK;
 }

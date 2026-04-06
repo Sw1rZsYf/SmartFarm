@@ -52,7 +52,7 @@ extern "C"
     esp_err_t tjc_uart_deinit(void);
 
     esp_err_t tjc_sent_sensor(float *temperature, float *humidity,
-                              int *nh3_voltage, int *h2s_voltage, int *light);
+                              float *nh3_voltage, float *h2s_voltage, int *light);
     /**
      * @brief 读取一条完整的串口屏指令（以三个0xFF结尾）
      * @param buffer 存放指令的缓冲区（不含结束符）

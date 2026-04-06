@@ -3,6 +3,7 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "esp_log.h"
 #include "mqtt_client.h"
 #include "cJSON.h"
@@ -12,11 +13,39 @@
 static const char *TAG = "MQTT_PUBLISHER";
 
 static esp_mqtt_client_handle_t mqtt_client = NULL;
+static char last_report_id[16] = "";
+
+static double clamp_double(double value, double min, double max)
+{
+    if (value < min)
+    {
+        return min;
+    }
+    if (value > max)
+    {
+        return max;
+    }
+    return value;
+}
+
+static double quantize_double(double value, double step)
+{
+    if (step <= 0)
+    {
+        return value;
+    }
+    return round(value / step) * step;
+}
 
 // 设置MQTT客户端句柄
 void mqtt_publisher_init(esp_mqtt_client_handle_t client)
 {
     mqtt_client = client;
+}
+
+const char *mqtt_get_last_report_id(void)
+{
+    return last_report_id;
 }
 
 // 创建JSON参数对象
@@ -80,7 +109,7 @@ void mqtt_send_service_reply(const char *service_id, const char *id,
 
 // 上报传感器数据
 int mqtt_report_sensor_data(float temperature, float humidity,
-                            int nh3_concentration, int h2s_concentration, int light)
+                            float nh3_concentration, float h2s_concentration, int light)
 {
     if (!mqtt_client)
     {
@@ -91,6 +120,26 @@ int mqtt_report_sensor_data(float temperature, float humidity,
     static int msg_id_counter = 1;
     char id_str[10];
     snprintf(id_str, sizeof(id_str), "%d", msg_id_counter++);
+    snprintf(last_report_id, sizeof(last_report_id), "%s", id_str);
+
+    // 对齐OneNET物模型约束，避免越界导致整包被拒收
+    double temp_safe = quantize_double(clamp_double(temperature, -25.0, 100.0), 0.1);
+    double humi_safe = quantize_double(clamp_double(humidity, 0.0, 100.0), 0.1);
+    double h2s_safe = quantize_double(clamp_double(h2s_concentration, 0.0, 1000.0), 0.001);
+    double nh3_safe = quantize_double(clamp_double(nh3_concentration, 0.0, 1000.0), 0.001);
+    int light_safe = (int)clamp_double((double)light, 0.0, 65536.0);
+
+    if (temp_safe != temperature || humi_safe != humidity || h2s_safe != h2s_concentration ||
+        nh3_safe != nh3_concentration || light_safe != light)
+    {
+        ESP_LOGW(TAG,
+                 "检测到越界/步进不匹配，已修正后上报: T=%.3f->%.3f H=%.3f->%.3f NH3=%.3f->%.3f H2S=%.3f->%.3f L=%d->%d",
+                 temperature, temp_safe,
+                 humidity, humi_safe,
+                 nh3_concentration, nh3_safe,
+                 h2s_concentration, h2s_safe,
+                 light, light_safe);
+    }
 
     // 创建JSON根对象
     cJSON *root = cJSON_CreateObject();
@@ -113,19 +162,19 @@ int mqtt_report_sensor_data(float temperature, float humidity,
     }
 
     // 添加各个传感器数据
-    cJSON *temp_obj = create_param_object("value", temperature);
-    cJSON *humi_obj = create_param_object("value", humidity);
-    cJSON *light_obj = create_param_object("value", light);
-    cJSON *h2s_obj = create_param_object("value", h2s_concentration);
-    cJSON *nh3_obj = create_param_object("value", nh3_concentration);
+    cJSON *temp_obj = create_param_object("value", temp_safe);
+    cJSON *humi_obj = create_param_object("value", humi_safe);
+    cJSON *light_obj = create_param_object("value", light_safe);
+    cJSON *h2s_obj = create_param_object("value", h2s_safe);
+    cJSON *nh3_obj = create_param_object("value", nh3_safe);
 
     if (temp_obj && humi_obj && light_obj && h2s_obj && nh3_obj)
     {
-        cJSON_AddItemToObject(params, "temperature", temp_obj);
-        cJSON_AddItemToObject(params, "humidity", humi_obj);
-        cJSON_AddItemToObject(params, "light", light_obj);
-        cJSON_AddItemToObject(params, "h2s_concentration", h2s_obj);
-        cJSON_AddItemToObject(params, "nh3_concentration", nh3_obj);
+        cJSON_AddItemToObject(params, ONENET_PROP_TEMPERATURE, temp_obj);
+        cJSON_AddItemToObject(params, ONENET_PROP_HUMIDITY, humi_obj);
+        cJSON_AddItemToObject(params, ONENET_PROP_LIGHT, light_obj);
+        cJSON_AddItemToObject(params, ONENET_PROP_H2S, h2s_obj);
+        cJSON_AddItemToObject(params, ONENET_PROP_NH3, nh3_obj);
     }
 
     cJSON_AddItemToObject(root, "params", params);
@@ -155,7 +204,7 @@ int mqtt_report_sensor_data(float temperature, float humidity,
     }
     else
     {
-        ESP_LOGI(TAG, "数据上报成功，MsgID=%d", msg_pub_id);
+        ESP_LOGI(TAG, "数据上报已发送，MsgID=%d, ReqID=%s", msg_pub_id, id_str);
         ESP_LOGI(TAG, "Topic: %s", publish_topic);
         ESP_LOGI(TAG, "Data: %s", json_string);
     }

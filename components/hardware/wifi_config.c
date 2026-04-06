@@ -7,20 +7,20 @@
 #include "nvs_flash.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
-
+#include "tjc_driver.h"
 static const char *TAG = "WiFi_Connector";
 
-// // Wi-Fiè´¦å·å¯†ç 
+// // Wi-FiÕËºÅÃÜÂë
 // #define WIFI_SSID      "Xiaomi_818F"
 // #define WIFI_PASSWORD  "wwqy666."
 // #define MAX_RETRY_NUM  5
 
-// Wi-Fiè´¦å·å¯†ç 
-#define WIFI_SSID "Magic"
+// Wi-FiÕËºÅÃÜÂë
+#define WIFI_SSID "oppo"
 #define WIFI_PASSWORD "zjy1234567"
-#define MAX_RETRY_NUM 10
+#define MAX_RETRY_NUM 500
 
-// // Wi-Fiè´¦å·å¯†ç 
+// // Wi-FiÕËºÅÃÜÂë
 // #define WIFI_SSID "OPPO"
 // #define WIFI_PASSWORD "hasp2792"
 // #define MAX_RETRY_NUM 10
@@ -29,14 +29,14 @@ static const char *TAG = "WiFi_Connector";
 // #define WIFI_PASSWORD  "222222222"
 // #define MAX_RETRY_NUM  5
 
-// äº‹ä»¶ç»„å’Œå›è°ƒå‡½æ•°å¥æŸ„
+// ÊÂ¼ş×éºÍ»Øµ÷º¯Êı¾ä±ú
 static EventGroupHandle_t s_wifi_event_group;
 static wifi_connected_callback_t s_connected_callback = NULL;
 static int s_retry_num = 0;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 
-// äº‹ä»¶å¤„ç†å‡½æ•°
+// ÊÂ¼ş´¦Àíº¯Êı
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
 {
@@ -44,34 +44,37 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
     {
         esp_wifi_connect();
         ESP_LOGI(TAG, "Wi-Fi station started, connecting...");
+        tjc_printf("t8.txt=\"Á¬½ÓÖĞ\"\xff\xff\xff");
     }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
     {
-        // å°† event_data è½¬æ¢ä¸º wifi_event_sta_disconnected_t*
+        // ½« event_data ×ª»»Îª wifi_event_sta_disconnected_t*
         wifi_event_sta_disconnected_t *disconn = (wifi_event_sta_disconnected_t *)event_data;
-        ESP_LOGI(TAG, "Disconnected, reason code = %d", disconn->reason); // æ‰“å°åŸå› ç 
+        ESP_LOGI(TAG, "Disconnected, reason code = %d", disconn->reason); // ´òÓ¡Ô­ÒòÂë
 
-        // å¤„ç†æ–­å¼€é‡è¿
+        // ´¦Àí¶Ï¿ªÖØÁ¬
         if (s_retry_num < MAX_RETRY_NUM)
         {
             esp_wifi_connect();
             s_retry_num++;
             ESP_LOGI(TAG, "Disconnected, retry (%d/%d)", s_retry_num, MAX_RETRY_NUM);
+            tjc_printf("t8.txt=\"Ê§°Ü£¬ÕıÔÚÖØÁ¬\"\xff\xff\xff");
         }
         else
         {
             xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
             ESP_LOGE(TAG, "Failed to connect after %d retries", MAX_RETRY_NUM);
+            tjc_printf("t8.txt=\"Á¬½ÓÊ§°Ü\"\xff\xff\xff");
         }
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
-        // æˆåŠŸè·å–IPï¼Œè¿æ¥å®Œæˆ
+        // ³É¹¦»ñÈ¡IP£¬Á¬½ÓÍê³É
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_LOGI(TAG, "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-
+        tjc_printf("t8.txt=\"Á¬½Ó³É¹¦\"\xff\xff\xff");
         if (s_connected_callback)
         {
             s_connected_callback();
@@ -79,24 +82,24 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
     }
 }
 
-// åˆå§‹åŒ–ï¼Œå¤–éƒ¨è°ƒç”¨ï¼Œé“¾æ¥wifi
+// ³õÊ¼»¯£¬Íâ²¿µ÷ÓÃ£¬Á´½Ówifi
 void wifi_connect_init(wifi_connected_callback_t on_connected)
 {
-    // ä¿å­˜å›è°ƒå‡½æ•°ï¼Œç”¨äºè¿æ¥æˆåŠŸåé€šçŸ¥ä¸»ç¨‹åº
+    // ±£´æ»Øµ÷º¯Êı£¬ÓÃÓÚÁ¬½Ó³É¹¦ºóÍ¨ÖªÖ÷³ÌĞò
     s_connected_callback = on_connected;
 
-    // åˆå§‹åŒ–äº‹ä»¶ç»„
+    // ³õÊ¼»¯ÊÂ¼ş×é
     s_wifi_event_group = xEventGroupCreate();
 
     esp_netif_init();
     esp_event_loop_create_default();
     esp_netif_create_default_wifi_sta();
 
-    // åˆå§‹åŒ–Wi-Fié©±åŠ¨
+    // ³õÊ¼»¯Wi-FiÇı¶¯
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    // æ³¨å†Œäº‹ä»¶å¤„ç†å™¨
+    // ×¢²áÊÂ¼ş´¦ÀíÆ÷
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         ESP_EVENT_ANY_ID,
                                                         &wifi_event_handler,
@@ -108,15 +111,15 @@ void wifi_connect_init(wifi_connected_callback_t on_connected)
                                                         NULL,
                                                         NULL));
 
-    // é…ç½®å¹¶å¯åŠ¨Wi-Fi
+    // ÅäÖÃ²¢Æô¶¯Wi-Fi
     wifi_config_t wifi_config = {
         .sta = {
             .ssid = WIFI_SSID,
             .password = WIFI_PASSWORD,
-            .threshold.authmode = WIFI_AUTH_WPA2_PSK, // ä½¿ç”¨æœ€é€šç”¨çš„WPA2è®¤è¯
+            .threshold.authmode = WIFI_AUTH_WPA2_PSK, // Ê¹ÓÃ×îÍ¨ÓÃµÄWPA2ÈÏÖ¤
         },
     };
-    // esp_wifi_set_connection_timeout(10); // è®¾ç½®è¿æ¥è¶…æ—¶æ—¶é—´ä¸º10ç§’
+    // esp_wifi_set_connection_timeout(10); // ÉèÖÃÁ¬½Ó³¬Ê±Ê±¼äÎª10Ãë
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
