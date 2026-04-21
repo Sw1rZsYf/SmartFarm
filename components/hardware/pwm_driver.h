@@ -14,8 +14,10 @@ extern "C"
 {
 #endif
 
-#define PWM_PIN_0 GPIO_NUM_19
-#define PWM_PIN_2 GPIO_NUM_13
+#define PWM_PIN_0 GPIO_NUM_39
+#define PWM_PIN_1 GPIO_NUM_0  // 投料
+#define PWM_PIN_2 GPIO_NUM_45 // 风扇
+#define PWM_PIN_3 GPIO_NUM_20 // 清粪
     /**
      * @brief PWM通道配置结构体
      */

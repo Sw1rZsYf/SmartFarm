@@ -16,18 +16,22 @@ static const char *TAG = "WiFi_Connector";
 // #define MAX_RETRY_NUM  5
 
 // Wi-Fi账号密码
-#define WIFI_SSID "oppo"
-#define WIFI_PASSWORD "zjy1234567"
-#define MAX_RETRY_NUM 500
+// #define WIFI_SSID "oppo"
+// #define WIFI_PASSWORD "zjy1234567"
+// #define MAX_RETRY_NUM 500
 
 // // Wi-Fi账号密码
 // #define WIFI_SSID "OPPO"
 // #define WIFI_PASSWORD "hasp2792"
 // #define MAX_RETRY_NUM 10
 
-// #define WIFI_SSID      "iPhone"
-// #define WIFI_PASSWORD  "222222222"
-// #define MAX_RETRY_NUM  5
+#define WIFI_SSID "SmartFarm"
+#define WIFI_PASSWORD "222222222"
+#define MAX_RETRY_NUM 500
+
+// #define WIFI_SSID "iPhone"
+// #define WIFI_PASSWORD "222222222"
+// #define MAX_RETRY_NUM 500
 
 // 事件组和回调函数句柄
 static EventGroupHandle_t s_wifi_event_group;
@@ -58,7 +62,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
             esp_wifi_connect();
             s_retry_num++;
             ESP_LOGI(TAG, "Disconnected, retry (%d/%d)", s_retry_num, MAX_RETRY_NUM);
-            tjc_printf("t8.txt=\"失败，正在重连\"\xff\xff\xff");
+            tjc_printf("t8.txt=\"正在重连\"\xff\xff\xff");
         }
         else
         {

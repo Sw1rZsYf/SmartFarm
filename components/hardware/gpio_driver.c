@@ -13,6 +13,8 @@ static uint8_t *s_rgb_buf = NULL; // 存储为 RGB RGB ...
 static int s_led_count = 0;
 static gpio_num_t s_gpio = LED_STRIP_PIN;
 static rmt_channel_t s_rmt_channel = RMT_CHANNEL_0;
+static bool s_heat_pin_initialized = false;
+static bool s_light_pin_initialized = false;
 
 // RMT 时钟分频（APB 80MHz / div），选用 2 => tick = 25ns
 static const int RMT_CLK_DIV = 2;
@@ -237,6 +239,50 @@ void switch_led(uint32_t on)
 void switch_fan(uint32_t Youmen)
 {
 	int aim_pwm = (int)(1.0 * Youmen / 100 * 255);
+}
+
+void switch_heat(uint32_t on)
+{
+	if (!s_heat_pin_initialized)
+	{
+		gpio_init_pin((gpio_num_t)HEAT_IONUM, GPIO_MODE_OUTPUT, false, false);
+		s_heat_pin_initialized = true;
+	}
+
+	if (on)
+	{
+		// 低电平开启加热
+		gpio_set_level((gpio_num_t)HEAT_IONUM, 1);
+		ESP_LOGI("GPIO_DRIVER", "Heater ON (GPIO%d LOW)", HEAT_IONUM);
+	}
+	else
+	{
+		// 高电平关闭加热
+		gpio_set_level((gpio_num_t)HEAT_IONUM, 0);
+		ESP_LOGI("GPIO_DRIVER", "Heater OFF (GPIO%d HIGH)", HEAT_IONUM);
+	}
+}
+
+void switch_light(uint32_t on)
+{
+	if (!s_light_pin_initialized)
+	{
+		gpio_init_pin((gpio_num_t)LIGHT_IONUM, GPIO_MODE_OUTPUT, false, false);
+		s_light_pin_initialized = true;
+	}
+
+	if (on)
+	{
+
+		gpio_set_level((gpio_num_t)LIGHT_IONUM, 1);
+		ESP_LOGI("GPIO_DRIVER", "Light ON (GPIO%d LOW)", LIGHT_IONUM);
+	}
+	else
+	{
+
+		gpio_set_level((gpio_num_t)LIGHT_IONUM, 0);
+		ESP_LOGI("GPIO_DRIVER", "Light OFF (GPIO%d HIGH)", LIGHT_IONUM);
+	}
 }
 
 // 写

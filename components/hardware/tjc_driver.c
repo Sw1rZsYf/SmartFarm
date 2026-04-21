@@ -25,8 +25,8 @@ static const char *TAG = "TJC_DRIVER";
 // UART配置参数
 #define TJC_UART_PORT_NUM UART_NUM_2 // 使用UART2（避免与调试串口UART0冲突）
 #define TJC_UART_BAUD_RATE 9600      // 淘晶驰串口屏默认波特率 [citation:2]
-#define TJC_UART_TX_GPIO 38          // ESP32-S3 TX -> 串口屏 RX
-#define TJC_UART_RX_GPIO 45          // ESP32-S3 RX -> 串口屏 TX
+#define TJC_UART_TX_GPIO 41          // ESP32-S3 TX -> 串口屏 RX
+#define TJC_UART_RX_GPIO 42          // ESP32-S3 RX -> 串口屏 TX
 #define TJC_UART_RTS_GPIO UART_PIN_NO_CHANGE
 #define TJC_UART_CTS_GPIO UART_PIN_NO_CHANGE
 

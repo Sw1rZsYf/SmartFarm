@@ -2,6 +2,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include <stdio.h>
 #include "sntp_time.h"
 #include "app.h"
 
@@ -85,6 +86,21 @@ void calc_current_time(void)
              current_time.tm_hour, current_time.tm_min, current_time.tm_sec);
 
     // sntp_stop();
+}
+
+void get_current_time_str(char *buf, size_t buf_len)
+{
+    if (!buf || buf_len == 0)
+    {
+        return;
+    }
+
+    snprintf(buf, buf_len, "%04d-%02d-%02d %02d:%02d",
+             current_time.tm_year + 1900,
+             current_time.tm_mon + 1,
+             current_time.tm_mday,
+             current_time.tm_hour,
+             current_time.tm_min);
 }
 
 uint8_t get_current_hour(void)

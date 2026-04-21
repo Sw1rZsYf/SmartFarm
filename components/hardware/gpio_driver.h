@@ -11,7 +11,8 @@
 #define LED_STRIP_BRIGHTNESS 30 // 亮度值 (0-255)
 
 #define FAN_IONUM 42
-
+#define HEAT_IONUM 35
+#define LIGHT_IONUM 47
 // 初始化 WS2812 驱动，gpio_num 可使用 GPIO_NUM_48
 // led_count 为灯珠数量，调用一次即可；成功返回 ESP_OK
 esp_err_t neopixel_init(gpio_num_t gpio_num, int led_count);
@@ -40,5 +41,7 @@ void RGB_Blink(void);
 
 void switch_led(uint32_t on);
 void switch_fan(uint32_t Youmen);
+void switch_heat(uint32_t on);
+void switch_light(uint32_t on);
 
 #endif

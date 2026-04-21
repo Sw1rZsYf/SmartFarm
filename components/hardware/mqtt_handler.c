@@ -10,7 +10,7 @@
 #include "onenet_config.h"
 #include "mqtt_handler.h"
 #include "mqtt_publisher.h"
-#include "app.h"
+#include "service_router.h"
 
 static const char *TAG = "MQTT_HANDLER";
 
@@ -115,52 +115,6 @@ static char *parse_service_id(const char *topic)
 }
 
 // 处理开关灯服务
-static void handle_switch_led_service(const cJSON *params, const char *msg_id, const char *service_id)
-{
-    cJSON *led_on = cJSON_GetObjectItem(params, "led_on");
-
-    if (cJSON_IsTrue(led_on))
-    {
-        runOnLedTask();
-        mqtt_send_service_reply(service_id, msg_id, 200, "LED turned on", NULL);
-    }
-    else if (cJSON_IsFalse(led_on))
-    {
-        runOffLedTask();
-        mqtt_send_service_reply(service_id, msg_id, 200, "LED turned off", NULL);
-    }
-}
-
-// 处理开关风扇服务
-static void handle_switch_fan_service(const cJSON *params, const char *msg_id, const char *service_id)
-{
-    cJSON *fan_on = cJSON_GetObjectItem(params, "fan_on");
-
-    if (cJSON_IsTrue(fan_on))
-    {
-        switch_fan(1);
-        ESP_LOGI(TAG, "执行命令: 开风扇");
-        mqtt_send_service_reply(service_id, msg_id, 200, "FAN turned on", NULL);
-    }
-    else if (cJSON_IsFalse(fan_on))
-    {
-        switch_fan(0);
-        ESP_LOGI(TAG, "执行命令: 关风扇");
-        mqtt_send_service_reply(service_id, msg_id, 200, "FAN turned off", NULL);
-    }
-}
-
-static void handle_set_time_service(const cJSON *params, const char *msg_id, const char *service_id)
-{
-    cJSON *hour_json = cJSON_GetObjectItem(params, "hour");
-    cJSON *min_json = cJSON_GetObjectItem(params, "min");
-    int hour = hour_json->valueint;
-    int min = min_json->valueint;
-
-    setFeedTask(hour, min, 1);
-    mqtt_send_service_reply(service_id, msg_id, 200, "OK", NULL);
-}
-
 // 处理服务调用
 static void process_service_invoke(const char *topic, const char *data)
 {
@@ -184,25 +138,11 @@ static void process_service_invoke(const char *topic, const char *data)
     cJSON *msg_id_json = cJSON_GetObjectItem(root, "id");
     char *msg_id = msg_id_json ? msg_id_json->valuestring : "0";
 
+    ESP_LOGI(TAG, "收到服务调用: service_id=%s, msg_id=%s", service_id, msg_id);
+
     if (params && cJSON_IsObject(params))
     {
-        if (strcmp(service_id, "switch_led") == 0)
-        {
-            handle_switch_led_service(params, msg_id, service_id);
-        }
-        else if (strcmp(service_id, "switch_fan") == 0)
-        {
-            handle_switch_fan_service(params, msg_id, service_id);
-        }
-        else if (strcmp(service_id, "setAutoFeedTime") == 0)
-        {
-            handle_set_time_service(params, msg_id, service_id);
-        }
-        else
-        {
-            ESP_LOGW(TAG, "未知服务ID: %s", service_id);
-            mqtt_send_service_reply(service_id, msg_id, 404, "Service not found", NULL);
-        }
+        service_router_dispatch(service_id, params, msg_id);
     }
 
     cJSON_Delete(root);

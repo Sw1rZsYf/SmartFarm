@@ -8,7 +8,7 @@
 #include "esp_adc/adc_cali_scheme.h"
 
 // 定义通道
-#define NH3_CHANNEL ADC_CHANNEL_5   // ADC2-CH5
+#define NH3_CHANNEL ADC_CHANNEL_6   // ADC2-CH5
 #define H2S_CHANNEL ADC_CHANNEL_0   // ADC2-CH0
 #define LIGHT_CHANNEL ADC_CHANNEL_5 // ADC1-CH5
 #define ADC_UNIT_LIGHT ADC_UNIT_1

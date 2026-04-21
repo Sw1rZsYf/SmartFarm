@@ -171,6 +171,13 @@ int adc_read_voltage(adc_unit_t adc_unit, adc_channel_t channel, adc_cali_handle
 
     int average_raw = sum / valid_samples;
 
+    // 12bit ADC 原始值接近满量程，通常意味着输入电压过高或分压不当
+    if (average_raw > 4000)
+    {
+        ESP_LOGW(TAG, "ADC可能饱和: unit=%d channel=%d raw=%d/4095，建议检查5V传感器是否做分压保护",
+                 adc_unit, channel, average_raw);
+    }
+
     // 如果提供了校准句柄，转换为电压
     if (handle != NULL)
     {
@@ -213,7 +220,7 @@ void adc_system_init(void)
     esp_err_t ret;
     // NH3传感器ADC初始化
     ESP_LOGI("MAIN", "Initializing ADC for NH3 sensor...");
-    ret = adc_init(ADC_UNIT_GUS, NH3_CHANNEL, ADC_ATTEN);
+        ret = adc_init(ADC_UNIT_GUS, NH3_CHANNEL, ADC_ATTEN);
     if (ret != ESP_OK)
     {
         ESP_LOGE("MAIN", "Failed to initialize NH3 ADC");

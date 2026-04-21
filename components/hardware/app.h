@@ -2,6 +2,7 @@
 #define _APP_H_
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -48,10 +49,21 @@ void control(float temperature, float humidity,
              float nh3_concentration, float h2s_concentration, int light);
 void setFeedTask(int hour, int min, int mode);
 void runFeedTask();
+void runClearTask(void);
 void runOnLedTask(void);
 void runOffLedTask(void);
+void setLightTask(bool on);
+void setHeatTask(bool on);
+void setCurtainTask(bool open);
+void setLightSystemMode(bool auto_mode);
+bool isLightSystemAutoMode(void);
+void setAutoIntervalsSec(uint32_t feed_interval_sec, uint32_t clear_interval_sec);
+uint32_t getAutoFeedIntervalMs(void);
+uint32_t getAutoClearIntervalMs(void);
+void registerAutoFeedTaskHandle(TaskHandle_t task_handle);
+void registerAutoClearTaskHandle(TaskHandle_t task_handle);
 void runEmssionTask();
-void setEmssionTask();
+void setEmssionTask(int hour, int min, int mode);
 void check_AutoTask();
 void Opencurtain();
 void Closecurtain();

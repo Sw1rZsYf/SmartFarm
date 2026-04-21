@@ -62,9 +62,28 @@ esp_err_t pwm_init_channel(uint8_t channel, const pwm_channel_config_t *config)
         return ESP_ERR_INVALID_ARG;
     }
 
-    // 分配LEDC通道和定时器（简单起见：通道号直接映射，定时器按通道号/2分配，让每个定时器带两个通道）
+    // 分配LEDC通道和定时器
+    // 0/1: 两个SG90舵机，共用 timer0
+    // 2: 风扇，独占 timer1
+    // 3: 清粪舵机，独占 timer2
     ledc_channel_t ledc_chan = (ledc_channel_t)(channel % 8);
-    ledc_timer_t ledc_timer = (ledc_timer_t)(channel / 2); // 0,0,1,1,2,2,3,3
+    ledc_timer_t ledc_timer;
+    switch (channel)
+    {
+    case 0:
+    case 1:
+        ledc_timer = LEDC_TIMER_0;
+        break;
+    case 2:
+        ledc_timer = LEDC_TIMER_1;
+        break;
+    case 3:
+        ledc_timer = LEDC_TIMER_2;
+        break;
+    default:
+        ledc_timer = (ledc_timer_t)(channel / 2);
+        break;
+    }
 
     // 配置定时器
     ledc_timer_bit_t resolution = (ledc_timer_bit_t)(config->duty_resolution);
@@ -243,6 +262,14 @@ void pwm_init(void)
         .duty_cycle = 0};
     ESP_ERROR_CHECK(pwm_init_channel(0, &ch0_config));
 
+    // 喂食舵机通道1 (与通道0共用定时器0，保持同频率)
+    pwm_channel_config_t ch1_config = {
+        .gpio_num = PWM_PIN_1, // 喂食舵机GPIO
+        .freq_hz = 50,
+        .duty_resolution = 12,
+        .duty_cycle = 0};
+    ESP_ERROR_CHECK(pwm_init_channel(1, &ch1_config));
+
     // 风扇通道2 (定时器1)
     pwm_channel_config_t ch2_config = {
         .gpio_num = PWM_PIN_2, // 风扇GPIO（需重新指定引脚）
@@ -250,6 +277,14 @@ void pwm_init(void)
         .duty_resolution = 8,
         .duty_cycle = 0};
     ESP_ERROR_CHECK(pwm_init_channel(2, &ch2_config));
+
+    // 清粪舵机通道3 (定时器2)
+    pwm_channel_config_t ch3_config = {
+        .gpio_num = PWM_PIN_3, // 清粪舵机GPIO
+        .freq_hz = 50,
+        .duty_resolution = 12,
+        .duty_cycle = 0};
+    ESP_ERROR_CHECK(pwm_init_channel(3, &ch3_config));
 }
 
 esp_err_t pwm_fade_duty(uint8_t channel, uint32_t start_duty, uint32_t end_duty, uint32_t fade_ms)
@@ -283,7 +318,6 @@ esp_err_t pwm_fade_duty(uint8_t channel, uint32_t start_duty, uint32_t end_duty,
     }
 
     int32_t delta = (int32_t)end_duty - (int32_t)start_duty;
-    uint32_t current_duty = start_duty;
 
     // 先设置起始占空比
     esp_err_t ret = pwm_set_duty(channel, start_duty);
